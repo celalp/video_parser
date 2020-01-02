@@ -5,28 +5,32 @@ python files. `parse_video.py` and `utils.py` are the workhorse files and `analy
 
 # Installation
 
-This package was writtenin python 3.7 so that needs to be installed. See [python documentation](https://www.python.org/) 
+This package was written in python 3.7 so that needs to be installed. See [python documentation](https://www.python.org/) 
 for OS specific installation instructions. 
 
 ## Dependencies
 
-This packge has several dependcies, they are in the `requriements.txt` package. After python installation those can be 
+This package has several dependencies, they are in the `requriements.txt` package. After python installation those can be 
 installed using `pip`. If `pip` is not installed in your system you can use [these instructions](https://pip.pypa.io/en/stable/installing/) 
-to install `pip` and run the command 
+to install `pip` and run the command: 
 
 ```bash
 pip install -r requriements.txt
 ```
 
 Keep in mind that if you have multiple versions of python installed (python2 vs 3 or python 3.5 vs 3.6) you might want to 
-use follow [different instructions]https://stackoverflow.com/questions/2812520/dealing-with-multiple-python-versions-and-pip)
+follow [different instructions](https://stackoverflow.com/questions/2812520/dealing-with-multiple-python-versions-and-pip).
 
 # Running
 
-There are 2 mutually exclusive analysis mode. Directory and file. Directory mode takes a direcoty path and iterates over
-all the files in that specific direcotyr that end with .avi. File mode takes a single file. 
+There are 2 mutually exclusive analysis modes. Directory and file. Directory mode takes a directory path and iterates over
+all the files in that specific location that end with .avi. File mode takes a single file. 
 
-Here are the command line options
+Here are the command line options, you can also view these using 
+
+```bash
+python analysis.py --help
+```
 
 
 `-f` or `--filename` : file path for file mode usage  
@@ -58,8 +62,7 @@ calculate:
   remove_background: true # only use the detected object (the mask area)
 ``` 
 
-
-So a standard run will look like for single file mode. 
+So a standard run will look like this for single file mode. 
 
 ```bash
 python analysis.py -f myvideo.avi -y config.yaml -o myoutput -c 5
