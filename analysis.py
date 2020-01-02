@@ -2,7 +2,6 @@ import yaml
 import pandas as pd
 import argparse as arg
 import parse_video as vid
-from plotnine import
 import os
 
 
@@ -43,11 +42,11 @@ if __name__=="__main__":
 
     parsed_videos={}
     for file in files:
-        parsed_videos[file]={"frames":[], "masks":[]}
+        parsed_videos[file]={"intensity":[], "masks":[]}
         myvid=vid.Video(file)
-        myvid.get_frames(return_denoised=params["frames"]["return_denoized"],
-                              dsk_size=params["frames"]["disk_size"],
-                              invert=params["frames"]["invert"])
+        myvid.get_frames(return_denoised=params["intensity"]["return_denoized"],
+                              dsk_size=params["intensity"]["disk_size"],
+                              invert=params["intensity"]["invert"])
         masks=myvid.get_masks(cores=args.threads, quant=params["masks"]["quant"])
         if args.use_object_tracking:
             warped_frames, warped_masks=myvid.track_object(myvid.frames, masks, cores=args.threads,
@@ -61,18 +60,16 @@ if __name__=="__main__":
             mask_area, frame_intensities=myvid.calculate_values(myvid.frames, masks,
                                                                 remove_background=params["calculate"]["remove_background"])
 
-
+# Keeping dfs in memory for future development/plotting. 
     dfs={}
     with pd.ExcelWriter(args.output+".xlsx") as writer:
         for key in parsed_videos.keys():
             name = key.replace(" ", "_").replace(".avi", "")
             df = pd.DataFrame(parsed_videos[key])
+            df["intensity_nobckgrnd"] = df["intensity"] - df["intensity"][params["tracking"]["reference_frame"]]
+            df["masms_nobckgrnd"] = df["masks"] - df["masks"][params["tracking"]["reference_frame"]]
             dfs[name]=df
             df.to_excel(writer, sheet_name=name, index=False)
-
-    if args.plot_results:
-        os.mkdir(args.output+"_plots")
-        for key in dfs.keys():
 
 
 
