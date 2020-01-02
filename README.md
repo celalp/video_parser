@@ -29,15 +29,15 @@ all the files in that specific direcotyr that end with .avi. File mode takes a s
 Here are the command line options
 
 
-`-f` or `--filename` : file path for file mode usage
-`-d` or `--directory` : directory for directory mode usage
-`-t` or `--use_object_tracking` : use object tracking (this is still under development) but uses feature matching using the ORB algorithm 
-and mask warping to match frame_x to frame_{x-1}
+`-f` or `--filename` : file path for file mode usage  
+`-d` or `--directory` : directory for directory mode usage  
+`-t` or `--use_object_tracking` : use object tracking (this is still under development) but uses feature matching using the ORB algorithm  
+and mask warping to match frame_x to frame_{x-1} 
 `-y` or `--config_yaml` : path for the config file for function parameters. The default values are provided in `config.yaml`
-(see below)
-`-c` or `--cores` : # of sub processes to spawn for determining masks and object tracking. 
+(see below)  
+`-c` or `--cores` : # of sub processes to spawn for determining masks and object tracking.  
 `-o` or `--output` : the name of the output file desired will be written in the current directory and 
-xlsx will be added to the file name. 
+xlsx will be added to the file name.  
 
 ## parameters
 
