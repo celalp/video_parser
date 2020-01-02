@@ -77,10 +77,10 @@ This will generate myoutput.xlsx with a sheet in the excel file for every file i
 
 Each sheet will have 4 columns, 
 
-intensity: total pixel intensity for each frame (w/ or w/o background removal depending on settings)  
-mask: total mask area  
-intensity_noref: total pixel intensity for each frame minus the total intensity of the reference frame  
-mask_noref: total mask area minus the mask area of the reference frame  
+**intensity**: total pixel intensity for each frame (w/ or w/o background removal depending on settings)  
+**mask**: total mask area  
+**intensity_noref**: total pixel intensity for each frame minus the total intensity of the reference frame  
+**mask_noref**: total mask area minus the mask area of the reference frame  
 
 
 You can then use these values to visualize using your favourite graphing tools. 
