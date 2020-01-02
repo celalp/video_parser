@@ -1,0 +1,15 @@
+# this file specifies pipeline parameters there are
+# too many for them to be a command line argument.
+# some of the features are not fully developed yet.
+frames:
+  return_denoized: true
+  disk_size: 2
+  invert: false
+masks:
+  quantile: 0.15
+tracking:
+  min_value: 10
+  normalize: true
+  reference_frame: 0
+calculate:
+  remove_background: true

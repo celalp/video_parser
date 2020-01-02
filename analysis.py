@@ -11,10 +11,9 @@ if __name__=="__main__":
     parser.add_argument('-d', '--directory', type=str, help="directory of avi files and nothing else", default=None)
     parser.add_argument('-t', '--use_object_tracking', help="use feature and geometry matching", default=False,
                         action='store_true')
-    parser.add_argument('-c', '--config_file', type=str, help='path of the config.yaml file', action="store")
-    parser.add_argument('-t', '--threads', type=int, help='number of cores to use (integer)', action="store", default=1)
+    parser.add_argument('-y', '--config_yaml', type=str, help='path of the config.yaml file', action="store")
+    parser.add_argument('-c', '--cores', type=int, help='number of cores to use (integer)', action="store", default=1)
     parser.add_argument('-o', '--output', type=str, help='name of the output file', action="store")
-    parser.add_argument('-p', '--plot_results', type=str, help='plot results', action="store_true")
     parser.add_argument()
     args = parser.parse_args()
 
@@ -60,14 +59,14 @@ if __name__=="__main__":
             mask_area, frame_intensities=myvid.calculate_values(myvid.frames, masks,
                                                                 remove_background=params["calculate"]["remove_background"])
 
-# Keeping dfs in memory for future development/plotting. 
+# Keeping dfs in memory for future development/plotting.
     dfs={}
     with pd.ExcelWriter(args.output+".xlsx") as writer:
         for key in parsed_videos.keys():
             name = key.replace(" ", "_").replace(".avi", "")
             df = pd.DataFrame(parsed_videos[key])
-            df["intensity_nobckgrnd"] = df["intensity"] - df["intensity"][params["tracking"]["reference_frame"]]
-            df["masms_nobckgrnd"] = df["masks"] - df["masks"][params["tracking"]["reference_frame"]]
+            df["intensity_noref"] = df["intensity"] - df["intensity"][params["tracking"]["reference_frame"]]
+            df["masms_noref"] = df["masks"] - df["masks"][params["tracking"]["reference_frame"]]
             dfs[name]=df
             df.to_excel(writer, sheet_name=name, index=False)
 
