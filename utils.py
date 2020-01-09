@@ -1,16 +1,25 @@
 import numpy as np
+import pandas as pd
 from skimage.morphology import watershed, disk
 from skimage.filters import scharr, threshold_otsu, rank
 from skimage.exposure import adjust_log, match_histograms
 from skimage.feature import ORB, match_descriptors
 from skimage.transform import ProjectiveTransform, SimilarityTransform, warp
-from skimage.measure import ransac
+from skimage.measure import ransac, regionprops_table
 from skimage.util import invert
 from scipy import ndimage as ndi
 import cv2
 
 
 def process_frame(frame, return_denoised=True, dsk=2, inv=False):
+    """
+    read a frame from opencv and pre-process for analysis
+    :param frame: this is the frame returned by the video reader in opencv
+    :param return_denoised: use gausian kernel denoisin
+    :param dsk: size of the disk for denoising ignored if not return denoised
+    :param inv: invert (for bright field images)
+    :return: an array
+    """
     arr = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     adjusted = adjust_log(arr)
     if return_denoised:
@@ -20,6 +29,12 @@ def process_frame(frame, return_denoised=True, dsk=2, inv=False):
     return arr
 
 def generate_mask(frame, quantile=0.15):
+    """
+    generate a mask using otsu's method
+    :param frame: frame to detect a single object in
+    :param quantile: for lower threshold
+    :return: the mask as an nd array
+    """
     markers = np.zeros_like(frame)
     markers[frame < np.quantile(frame, quantile)] = 1
     markers[frame > threshold_otsu(frame)] = 2
@@ -31,11 +46,10 @@ def generate_mask(frame, quantile=0.15):
 
 def calculate_coords(mask, return_mask=True):
     """
-    the centre of mass is the centre of mass of the mask the pixel values are not counted
-    :param mask: mask from get_masks
-    :return: a tuple of tuples, first the coords of a rectangle second the center of the
-    the rectangle
-    third the centre of mass
+    calculate the coordinates (bounding box of the mask or return a boolean ndarray for mask
+    :param mask: mask ndarray
+    :param return_mask: return a boolean array for the bounding box instead of the coordinates
+    :return:
     """
     y_coords = []
     x_coords = []
@@ -62,16 +76,50 @@ def calculate_coords(mask, return_mask=True):
     else:
         return coords
 
+def calculate_properties(mask, image, props, to_cache):
+    """
+    calculate a bunch of shape properties that are defined in config.yaml
+    :param mask: mask
+    :param image: frame
+    :param props: a list of str, tuple of str or str
+    :param to_cache: cache the results for faster computation but higher memory consumption
+    :return: a data frame of single row
+    """
+    attrs=regionprops_table(label_image=mask, intensity_image=image, properties=props,
+                            cache=to_cache)
+    return pd.DataFrame(attrs)
+
 def normalize_pics(image1, image2):
+    """
+    normalize histogram of image2 compared to image1
+    :param image1:
+    :param image2:
+    :return: new normalized image
+    """
     normalized=match_histograms(image2, image1, multichannel=False)
     return(normalized)
 
 def crop(array, coords):
+    """
+    crop an image based on the coordinates usually the bounding box of the mask
+    :param array: image
+    :param coords: box
+    :return:
+    """
     cropped = array[coords[1][0]:coords[1][1], coords[1][2]:coords[1][3]]
     return cropped
 
 
 def match_objects(image1, image2, mask2, minmatch=10, normalize=True):
+    """
+    use the ORB algorithm to detect interesting features and warp image2 and it's mask based on the features matched
+    :param image1:
+    :param image2:
+    :param mask2:
+    :param minmatch: minimum # of interesting features
+    :param normalize: normalize histograms (see above)
+    :return: warped image and mask as ndarrays
+    """
 
     if normalize:
         image2=normalize_pics(image1, image2)

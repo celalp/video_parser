@@ -13,3 +13,22 @@ tracking:
   reference_frame: 0
 calculate:
   remove_background: true
+  attributes:
+    - bbox_area
+    - convex_area
+    - eccentricity
+    - extent
+    - local_centroid
+    - major_axis_length
+    - minor_axis_length
+    - perimeter
+    - solidity
+    - weighted_local_centroid
+  cache: true
+write_video:
+  write: true
+  what:
+    - overlay
+    - mask
+  periodicity: 10
+  FPS: 10

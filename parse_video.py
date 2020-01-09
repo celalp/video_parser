@@ -4,6 +4,10 @@ from itertools import repeat
 import os
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as anim
+from scipy import ndimage as ndi
+from skimage.color import label2rgb
 import pandas as pd
 
 class Video:
@@ -15,6 +19,13 @@ class Video:
             self.frames=[]
 
     def get_frames(self, return_denoised=True, dsk_size=2, invert=False):
+        """
+        read an avi file from the class path and retrun a list of ndarrays
+        :param return_denoised: use gausiian kernel denoising see utils
+        :param dsk_size: disk size for denoising see utils
+        :param invert: invert the image see utils
+        :return: a list of ndarrays
+        """
         frames = []
         if not self.video.isOpened():
             raise IOError("Error opening the video file")
@@ -31,6 +42,16 @@ class Video:
         self.frames=frames
 
     def get_masks(self, frames, cores=1, quant=0.15):
+        """
+        see utils.generate_mask for details
+        :param frames:
+        :param cores:
+        :param quant:
+        :return: a list of ndarrays
+
+        Since we are using these for pretty much everything I'm wondering whether
+        these values should be part of the class
+        """
         if cores > 1:
             with Pool(cores) as p:
                 mask_input=zip(frames, repeat(quant, len(frames)))
@@ -109,7 +130,6 @@ class Video:
         for mask in masks:
             mask_area.append(np.sum(mask))
 
-
         frame_intensities=[]
         for i in range(len(frames)):
             if remove_background:
@@ -117,5 +137,47 @@ class Video:
             else:
                 frame_intensities.append(np.sum(frames[i]))
 
-
         return mask_area, frame_intensities
+
+    def calculate_measures(self, masks, frames, attributes, cores=1, cached=True):
+        if len(frames)!=len(masks):
+            raise ValueError ("The number of masks and frames are not indentical!")
+
+        if cores > 1:
+            with Pool(cores) as p:
+                measures_input=zip(masks, frames, repeat(attributes, len(masks)), repeat(cached, len(masks)))
+                measures=p.starmap(utils.calculate_properties, measures_input)
+        else:
+            measures=[]
+            for i in range(len(masks)):
+                measure=utils.calculate_properties(masks[i], frames[i], props=attributes, to_cache=cached)
+                measures.append(measure)
+
+        measures=pd.concat(measures)
+        return measures
+
+    def write_mp4(self, frames, masks, outpath, what, size=(3,3), FPS=10, period=10):
+        """"""
+
+        if len(frames)!=len(masks):
+            raise ValueError ("The number of masks and frames are not indentical!")
+
+
+        fig=plt.figure(figsize=size)
+        ims=[]
+        for i in range(len(masks)):
+            if i % period ==0:
+                if what=="overlay":
+                    labeled_obj, _ = ndi.label(masks[i])
+                    image_label_overlay = label2rgb(labeled_obj, image=frames[i])
+                    ims.append([plt.imshow(image_label_overlay, animated=True)])
+                elif what=="mask":
+                    ims.append([plt.imshow(masks[i], animated=True)])
+                elif what=="frame":
+                    ims.append([plt.imshow(frames[i], animated=True)])
+            else:
+                continue
+
+        ani=anim.ArtistAnimation(fig, ims, interval=int(np.round(1000/FPS)))
+        filename=outpath+"/"+what+".mp4"
+        ani.save(filename)
