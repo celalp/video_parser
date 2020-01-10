@@ -25,10 +25,14 @@ calculate:
     - solidity
     - weighted_local_centroid
   cache: true
-write_video:
+video:
   write: true
   what:
     - overlay
     - mask
+    - frame
   periodicity: 10
   FPS: 10
+  size:
+    width: 3
+    height: 3

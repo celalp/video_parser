@@ -14,7 +14,7 @@ if __name__=="__main__":
                         action='store_true')
     parser.add_argument('-y', '--config_yaml', type=str, help='path of the config.yaml file', action="store")
     parser.add_argument('-c', '--cores', type=int, help='number of cores to use (integer)', action="store", default=1)
-    parser.add_argument('-o', '--output', type=str, help='name of the output file', action="store")
+    parser.add_argument('-o', '--output', type=str, help='name of the output directory, this will have subdirectories', action="store")
     args = parser.parse_args()
 
     if args.filename is not None and args.directory is not None:
@@ -66,18 +66,40 @@ if __name__=="__main__":
         parsed_videos[file]["intensity"]=frame_intensities
         parsed_videos[file]["masks"] = mask_area
 
-# Keeping dfs in memory for future development/plotting.
-    dfs={}
-    print("["+datetime.now().strftime("%Y/%m/%d %H:%M:%S")+"] "+"Writing results")
-    with pd.ExcelWriter(args.output+".xlsx") as writer:
-        for key in parsed_videos.keys():
-            name = key.replace(" ", "_").replace(".avi", "")
-            name=name.split("/").pop()
-            df = pd.DataFrame(parsed_videos[key])
-            df["intensity_noref"] = df["intensity"] - df["intensity"][params["tracking"]["reference_frame"]]
-            df["masks_noref"] = df["masks"] - df["masks"][params["tracking"]["reference_frame"]]
-            dfs[name]=df
-            df.to_excel(writer, sheet_name=name, index=False)
+        if len(params["calculate"]["attributes"]) > 0:
+            print("["+datetime.now().strftime("%Y/%m/%d %H:%M:%S")+"] "+"calculating attributes for "+ file)
+            raw=myvid.calculate_measures(masks, myvid.frames, params["calculate"]["attributes"], args.cores,
+                                     params["calculate"]["cache"])
+
+            raw.insert(0, "masks", parsed_videos[file]["masks"])
+            raw.insert(1, "intensity", parsed_videos[file]["intensity"])
+
+        else:
+            raw=pd.DataFrame(parsed_videos[file])
+
+        noref=[]
+        for column in raw.columns.values:
+            col_noref= raw[column] - raw[column][params["tracking"]["reference_frame"]]
+            noref.append(col_noref)
+
+        normalized=pd.concat(noref, axis=1)
+
+        resultsdir=args.output+"/"+file
+
+        os.mkdir(resultsdir)
+        print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "generating excel file for " + file)
+        with pd.ExcelWriter(resultsdir+"/results.xlsx") as writer:
+            raw.to_excel(writer, sheet_name="raw_data", index=False)
+            normalized.to_excel(writer, sheet_name="reference_removed", index=False)
+
+        if params["video"]["write"]:
+            print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "generating mp4 files for " + file)
+            for type in params["video"]["what"]:
+                myvid.write_mp4(frames=myvid.frames, masks=masks, what=type, outpath=resultsdir,
+                                size=(params["video"]["size"]["width"],params["video"]["size"]["height"]),
+                                FPS=params["video"]["FPS"], period=params["video"]["periodicity"])
+
+        print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + file + " done!")
 
 
 

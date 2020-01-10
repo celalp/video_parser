@@ -49,16 +49,36 @@ Here are the default parameters in the `config.yaml` file with description below
 ```yaml
 frames:
   return_denoized: true # use gaussian kernel denoising 
-  disk_size: 2 # the radius for above
-  invert: false # invert values after converting the color frames to grayscale
+  disk_size: 2 # disk size for denoising
+  invert: false # invert the values
 masks:
-  quantile: 0.15 # lower threshold for watershed algorithm. 
+  quantile: 0.15 # low value threshold for watershed
 tracking:
-  min_value: 10 # min number of features to detect
-  normalize: true # normalize frame x histogram using frame x-s
-  reference_frame: 0 # use this frames mask and the starting point
+  min_value: 10 # min number of interesting points to use
+  normalize: true # normalize the histogram of frame x using frame x-1
+  reference_frame: 0 # subtract the value of this from every other frame
 calculate:
-  remove_background: true # only use the detected object (the mask area)
+  remove_background: true # only use masked area
+  attributes:
+    - bbox_area # area of the bounding box
+    - convex_area # area of the convex hull
+    - eccentricity # how eliptical is the mask
+    - extent # area of bounding box/area of mask
+    - local_centroid # centre of mass of the mask
+    - major_axis_length # of the bounding ellipse
+    - minor_axis_length # of the bounding ellipse
+    - perimeter # of the mask
+    - solidity # how rectangular is the mask
+    - weighted_local_centroid # centre of mass of the mask weighed by pixel intensity 
+  cache: true # faster but uses more memory
+write_video:
+  write: true
+  what:
+    - overlay
+    - mask
+    - frame #using pseudo color
+  periodicity: 10 # use every nth frame 
+  FPS: 10 #frames per second
 ``` 
 
 So a standard run will look like this for single file mode. 
@@ -75,19 +95,18 @@ If using the directory mode:
 python analysis.py -d myfiles -y config.yaml -o myoutput -c 5
 ```
 
-This will generate myoutput.xlsx with a sheet in the excel file for every file in the directory that ends with `.avi`.
+This will generate a folder called myoutput. Inside this folder there will be another folder per video. Within these 
+folder there will be multiple files. These are:
 
-Each sheet will have 4 columns, 
+1. results.xlsx: An excel file with 2 sheets, the first one is called "raw" has the calculted values. The other one is 
+called "reference_removed" and has the value of the reference frame removed from each of rows. The columns depends on 
+what has been specified in the `config.yaml` file (see above). In addition to those columns there will be two more. 
 
-**intensity**: total pixel intensity for each frame (w/ or w/o background removal depending on settings)  
-**mask**: total mask area  
-**intensity_noref**: total pixel intensity for each frame minus the total intensity of the reference frame  
-**mask_noref**: total mask area minus the mask area of the reference frame  
+    A) intensity: total pixel intensity for each frame (w/ or w/o background removal depending on settings)
+    
+    B) mask: total mask area
+2. An mp4 video for each feature specified. 
 
+You can use the values in the excel file to visualize using your favourite graphing tools. 
 
-You can then use these values to visualize using your favourite graphing tools. 
-
-
-Please let me know if you have questions or issues. 
-
-Alper Celik
+Please let me know if you have any questions or issues. 

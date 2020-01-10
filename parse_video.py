@@ -140,6 +140,15 @@ class Video:
         return mask_area, frame_intensities
 
     def calculate_measures(self, masks, frames, attributes, cores=1, cached=True):
+        """
+        calculate a bunch of measures that are specfied in the config yaml
+        :param masks:
+        :param frames:
+        :param attributes: which attributes to calculate see config.yaml for a complete list
+        :param cores:
+        :param cached: cache results for faster computation and higher memory imprint
+        :return: a dataframe one row per frame and 1 or 2 columns per measure
+        """
         if len(frames)!=len(masks):
             raise ValueError ("The number of masks and frames are not indentical!")
 
@@ -153,11 +162,21 @@ class Video:
                 measure=utils.calculate_properties(masks[i], frames[i], props=attributes, to_cache=cached)
                 measures.append(measure)
 
-        measures=pd.concat(measures)
+        measures=pd.concat(measures, ignore_index=True)
         return measures
 
     def write_mp4(self, frames, masks, outpath, what, size=(3,3), FPS=10, period=10):
-        """"""
+        """
+        genereate an mp4 file for qc
+        :param frames:
+        :param masks:
+        :param outpath: where should the file shold be written
+        :param what: either frame, mask or overlay
+        :param size: tuple size of the matplotlib image
+        :param FPS: frames per second
+        :param period: use only every nth frame
+        :return: nothing
+        """
 
         if len(frames)!=len(masks):
             raise ValueError ("The number of masks and frames are not indentical!")
