@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
 from skimage.morphology import watershed, disk
-from skimage.filters import scharr, threshold_otsu, rank
+from skimage.filters import scharr, threshold_multiotsu, rank
 from skimage.exposure import adjust_log, match_histograms
 from skimage.feature import ORB, match_descriptors
 from skimage.transform import ProjectiveTransform, SimilarityTransform, warp
-from skimage.measure import ransac, regionprops_table
+from skimage.measure import ransac, regionprops_table, label
 from skimage.util import invert
 from scipy import ndimage as ndi
 import cv2
@@ -28,19 +28,19 @@ def process_frame(frame, return_denoised=True, dsk=2, inv=False):
         arr=invert(arr, signed_float=False)
     return arr
 
-def generate_mask(frame, quantile=0.15):
+def generate_mask(frame, levels=4):
     """
     generate a mask using otsu's method
     :param frame: frame to detect a single object in
-    :param quantile: for lower threshold
+    :param levels: the number of bins for the multiotsu threshold if there are overexposed regions use 4 otherwise 3 is good
     :return: the mask as an nd array
     """
+    tresholds=threshold_multiotsu(frame, levels)
     markers = np.zeros_like(frame)
-    markers[frame < np.quantile(frame, quantile)] = 1
-    markers[frame > threshold_otsu(frame)] = 2
+    markers[frame < tresholds[0]] = 1
+    markers[frame > tresholds[1]] = 2
     elevation = scharr(frame)
     segmentation = watershed(elevation, markers)
-    segmentation = ndi.binary_fill_holes(segmentation - 1)
     segmentation=segmentation.astype(np.uint8)
     return segmentation
 
@@ -76,7 +76,7 @@ def calculate_coords(mask, return_mask=True):
     else:
         return coords
 
-def calculate_properties(mask, image, props, to_cache):
+def calculate_properties(mask, image, props, to_cache, fill_holes, min_size=20000):
     """
     calculate a bunch of shape properties that are defined in config.yaml
     :param mask: mask
@@ -85,8 +85,25 @@ def calculate_properties(mask, image, props, to_cache):
     :param to_cache: cache the results for faster computation but higher memory consumption
     :return: a data frame of single row
     """
-    attrs=regionprops_table(label_image=mask, intensity_image=image, properties=props,
+
+    if fill_holes:
+        mask = ndi.binary_fill_holes(mask)
+
+    labels=label(mask-1)
+
+    intensities=[]
+    for lab in np.unique(labels):
+        if lab == 0:
+            continue
+        pix_sum = np.sum(image[labels == lab])
+        intensities.append(pix_sum)
+
+    attrs=regionprops_table(label_image=labels, intensity_image=image, properties=props,
                             cache=to_cache)
+    attrs=pd.DataFrame(attrs)
+    attrs.insert(1, "intensities", intensities)
+    attrs=attrs[attrs["area"] > min_size]
+
     return pd.DataFrame(attrs)
 
 def normalize_pics(image1, image2):

@@ -16,7 +16,6 @@ class Video:
             raise FileNotFoundError(path+" does not seem to exist")
         else:
             self.video=cv2.VideoCapture(path)
-            self.frames=[]
 
     def get_frames(self, return_denoised=True, dsk_size=2, invert=False):
         """
@@ -39,9 +38,9 @@ class Video:
                     print("Done reading video ready for analysis")
                     break
             self.video.release()
-        self.frames=frames
+        return frames
 
-    def get_masks(self, frames, cores=1, quant=0.15):
+    def get_masks(self, frames, cores=1, thresh=4):
         """
         see utils.generate_mask for details
         :param frames:
@@ -54,12 +53,12 @@ class Video:
         """
         if cores > 1:
             with Pool(cores) as p:
-                mask_input=zip(frames, repeat(quant, len(frames)))
+                mask_input=zip(frames, repeat(thresh, len(frames)))
                 masks=p.starmap(utils.generate_mask, mask_input)
         else:
             masks = []
             for frame in frames:
-                masks.append(utils.generate_mask(frame, quantile=quant))
+                masks.append(utils.generate_mask(frame, levels=thresh))
         return masks
 
     def track_object(self, frames, masks, cores=1, min=10, norm=True, reference_frame=None):
@@ -116,30 +115,8 @@ class Video:
         return warped_frames, warped_masks
 
     #TODO need to be able to do this with the warped masks and frames as well.
-    def calculate_values(self, frames, masks, remove_background=True):
-        """
-        This will subtract the warped image on frame x from original at x-1 at the
-        values and return a dict of subtracted values, and mask areas
-        :param warped_frames:
-        :return:
-        """
-        if len(frames)!=len(masks):
-            raise ValueError ("The number of masks and frames are not indentical!")
 
-        mask_area=[]
-        for mask in masks:
-            mask_area.append(np.sum(mask))
-
-        frame_intensities=[]
-        for i in range(len(frames)):
-            if remove_background:
-                frame_intensities.append(np.sum(frames[i][masks[i]!=0]))
-            else:
-                frame_intensities.append(np.sum(frames[i]))
-
-        return mask_area, frame_intensities
-
-    def calculate_measures(self, masks, frames, attributes, cores=1, cached=True):
+    def calculate_measures(self, masks, frames, attributes, cores=1, cached=True, holes=True, mn_size=20000):
         """
         calculate a bunch of measures that are specfied in the config yaml
         :param masks:
@@ -154,12 +131,14 @@ class Video:
 
         if cores > 1:
             with Pool(cores) as p:
-                measures_input=zip(masks, frames, repeat(attributes, len(masks)), repeat(cached, len(masks)))
+                measures_input=zip(masks, frames, repeat(attributes, len(masks)), repeat(cached, len(masks)),
+                                   repeat(holes, len(masks)), repeat(mn_size, len(masks)))
                 measures=p.starmap(utils.calculate_properties, measures_input)
         else:
             measures=[]
             for i in range(len(masks)):
-                measure=utils.calculate_properties(masks[i], frames[i], props=attributes, to_cache=cached)
+                measure=utils.calculate_properties(masks[i], frames[i], props=attributes, to_cache=cached,
+                                                   fill_holes=holes, min_size=mn_size)
                 measures.append(measure)
 
         measures=pd.concat(measures, ignore_index=True)
@@ -187,7 +166,7 @@ class Video:
         for i in range(len(masks)):
             if i % period ==0:
                 if what=="overlay":
-                    labeled_obj, _ = ndi.label(masks[i])
+                    labeled_obj, _ = ndi.label(masks[i]-1)
                     image_label_overlay = label2rgb(labeled_obj, image=frames[i])
                     ims.append([plt.imshow(image_label_overlay, animated=True)])
                 elif what=="mask":

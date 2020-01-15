@@ -6,14 +6,17 @@ frames:
   disk_size: 2
   invert: false
 masks:
-  quantile: 0.15
+  levels: 4
 tracking:
   min_value: 10
   normalize: true
   reference_frame: 0
 calculate:
   remove_background: true
+  fill_holes: false
+  min_size: 20000
   attributes:
+    - area
     - bbox_area
     - convex_area
     - eccentricity
