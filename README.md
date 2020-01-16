@@ -39,9 +39,9 @@ python analysis.py --help
 `-y` or `--config_yaml` : path for the config file for function parameters. The default values are provided in `config.yaml`
 (see below)  
 `-c` or `--cores` : # of sub processes to spawn for determining masks and object tracking.  
-`-o` or `--output` : the name of the output file desired will be written in the current directory and 
+`-o` or `--output` : the name of the output folder  
 `-e` or `--extension` : the file extension for the video, this uses ffmpeg in the background so anything supported by ffmpeg is also supported default avi
-xlsx will be added to the file name.  
+ 
 
 ## parameters
 
