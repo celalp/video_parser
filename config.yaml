@@ -5,6 +5,7 @@ frames:
   return_denoized: true
   disk_size: 2
   invert: false
+  normalize: true
 masks:
   levels: 4
 tracking:

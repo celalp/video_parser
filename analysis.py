@@ -49,6 +49,10 @@ if __name__=="__main__":
         frames=myvid.get_frames(return_denoised=params["frames"]["return_denoized"],
                               dsk_size=params["frames"]["disk_size"],
                               invert=params["frames"]["invert"])
+        if params["frames"]["normalize"]:
+            print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Normalizing image histograms " + file)
+            frames=myvid.normalize_frames(frames, params["tracking"]["reference_frame"])
+            
         print("["+datetime.now().strftime("%Y/%m/%d %H:%M:%S")+"] "+"Detecting objects for  " + file)
         masks=myvid.get_masks(frames, cores=args.cores, thresh=params["masks"]["levels"])
         if args.use_object_tracking:
