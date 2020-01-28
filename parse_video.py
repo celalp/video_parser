@@ -40,6 +40,30 @@ class Video:
             self.video.release()
         return frames
 
+    def normalize_frames(self, frames, reference_frame=None):
+        """
+        normalize histograms if reference frame is none use frame x-1
+        :param frames: list of ndarrays
+        :param reference_frame: which frame to use to normalize integer
+        :return: another list of ndarrays
+        """
+        normalized=[]
+        for i in range(len(frames)):
+            if reference_frame is None:
+                if i==0:
+                    continue
+                else:
+                    norm=utils.normalize_pics(frames[i-1], frames[i])
+                    normalized.append(norm)
+            else:
+                if i==reference_frame:
+                    continue
+                else:
+                    norm=utils.normalize_pics(frames[reference_frame], frames[i])
+                    normalized.append(norm)
+        return normalized
+
+
     def get_masks(self, frames, cores=1, thresh=4):
         """
         see utils.generate_mask for details

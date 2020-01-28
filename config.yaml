@@ -34,7 +34,7 @@ video:
     - overlay
     - mask
     - frame
-  periodicity: 10
+  periodicity: 20
   FPS: 10
   size:
     width: 3

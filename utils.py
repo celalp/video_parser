@@ -87,9 +87,10 @@ def calculate_properties(mask, image, props, to_cache, fill_holes, min_size=2000
     """
 
     if fill_holes:
-        mask = ndi.binary_fill_holes(mask)
-
-    labels=label(mask-1)
+        mask = ndi.binary_fill_holes(mask-1)
+        labels=label(mask)
+    else:
+        labels=label(mask)
 
     intensities=[]
     for lab in np.unique(labels):
