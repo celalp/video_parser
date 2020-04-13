@@ -5,30 +5,21 @@ frames:
   return_denoized: true
   disk_size: 2
   invert: false
-  normalize: true
-masks:
-  levels: 4
-tracking:
-  min_value: 10
-  normalize: true
-  reference_frame: 0
+subtractor:
+  algorithm: KNN
+  learningRate: 0.7
 calculate:
-  remove_background: true
-  fill_holes: false
-  min_size: 20000
-  attributes:
-    - area
-    - bbox_area
-    - convex_area
-    - eccentricity
-    - extent
-    - local_centroid
-    - major_axis_length
-    - minor_axis_length
-    - perimeter
-    - solidity
-    - weighted_local_centroid
-  cache: true
+  - area #mask area
+  - bbox_area # area of the bounding box
+  - convex_area # area of the convex hull
+  - eccentricity # how eliptical is the mask
+  - extent # area of bounding box/area of mask
+  - local_centroid # centre of mass of the mask
+  - major_axis_length # of the bounding ellipse
+  - minor_axis_length # of the bounding ellipse
+  - perimeter # of the mask
+  - solidity # how rectangular is the mask
+  - weighted_local_centroid
 video:
   write: true
   what:
