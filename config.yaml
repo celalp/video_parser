@@ -1,11 +1,18 @@
 # there are algorithm and method specific parameters see readme for details
 # method and algorithm are mandatory if others are left blank default values are assumed
 
-method: background #
 algorithm: MOG2
 method_parameters:
    detectShadows: false
    history: 10
-#TODO learning rate for background subtraction and other params for optical flow
+apply_parameters:
+   learningRate: 0.5
 invert_frame: false
 invert_mask: false
+video:
+   write: true
+   size:
+      width: 3
+      height: 3
+   FPS: 10
+   periodicity: 10

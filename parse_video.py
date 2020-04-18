@@ -1,5 +1,9 @@
 import os
 import cv2 as cv
+import matplotlib.pyplot as plt
+import matplotlib.animation as anim
+import numpy as np
+
 
 class Video:
     def __init__(self, path):
@@ -33,29 +37,40 @@ class Video:
             raise ValueError("pick and algorithm 'MOG2' or 'KNN")
         return backSub
 
-    #TODO
-    def optical_flower(self, algo, **kwargs):
-        pass
-
-
     def movement_by_background_removal(self, subtractor, generator, invert_mask=False, **kwargs):
-        if not self.video.isOpened():
-            raise IOError("Error opening the video file")
+        frames=[]
+        masks=[]
+
+        for frame in generator:
+            frames.append(frame)
+            mask=subtractor.apply(frame, **kwargs)
+            if invert_mask:
+                mask=cv.bitwise_not(mask)
+            masks.append(mask)
+        #skipping the first one because that is a blank mask
+        return frames[1:], masks[1:]
+
+    #TODO this seems simple concat frames and masks and write to path
+    def write_mp4(self, frames, masks, output, size=(3,3), FPS=10, period=30):
+        if len(frames) != len(masks):
+            raise ValueError("the number frames do not match number of masks")
         else:
-            frames=[]
-            masks=[]
+            fig = plt.figure(figsize=size)
+            ims=[]
+            for i in range(len(frames)):
+                if i % period==0:
+                    combined=cv.hconcat([frames[i], masks[i]])
+                    ims.append([plt.imshow(combined, animated=True)])
+                else:
+                    continue
 
-            for frame in generator:
-                frames.append(frame)
-                mask=subtractor.apply(frame, **kwargs)
-                if invert_mask:
-                    mask=cv.bitwise_not(mask)
-                masks.append(mask)
-            #skipping the first one because that is a blank mask
-            return frames[1:], masks[1:]
+            ani=anim.ArtistAnimation(fig, ims, interval=int(np.round(1000/FPS)))
+            ani.save(output)
 
-    #TODO
-    def movement_by_optical_flow(self, optical_flower, generator, **kwargs):
-        pass
+
+
+
+
+
 
 
