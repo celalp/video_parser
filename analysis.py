@@ -44,12 +44,20 @@ if __name__=="__main__":
         myvid=vid.Video(path=file)
 
         gen=myvid.frame_generator(invert=params['invert_frame'])
-        backsub=myvid.subtractor(algo=params['algorithm'], **params['method_parameters'])
-        frames, masks = myvid.movement_by_background_removal(backsub, gen,
-                                                           invert_mask=params['invert_mask'],
-                                                           **params['apply_parameters'])
-        zippedList = list(zip(range(len(masks)), [mask.sum() for mask in masks]))
-        results = pd.DataFrame(zippedList, columns=['frame', 'movement'])
+
+        if params['method']=="background_remove":
+            backsub=myvid.subtractor(algo=params['algorithm'], **params['method_parameters'])
+            frames, masks = myvid.movement_by_background_removal(backsub, gen,
+                                                               invert_mask=params['invert_mask'],
+                                                               **params['apply_parameters'])
+            zippedList = list(zip(range(len(masks)), [mask.sum() for mask in masks]))
+            results = pd.DataFrame(zippedList, columns=['frame', 'movement'])
+
+        elif params['method']=="optical_flow":
+            pass
+
+        else:
+            raise ValueError("method needs to be either optical_flow or background_remove")
 
         name = file.replace(" ", "_").replace(args.extension, "")
         name = name.split("/").pop()

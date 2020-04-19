@@ -33,8 +33,18 @@ class Video:
             backSub = cv.createBackgroundSubtractorMOG2(**kwargs)
         elif algo == 'KNN':
             backSub = cv.createBackgroundSubtractorKNN(**kwargs)
+        elif algo=='MOG':
+            backSub=cv.bgsegm_BackgroundSubtractorMOG(**kwargs)
+        elif algo=='LSBP':
+            backSub=cv.bgsegm_BackgroundSubtractorLSBP(**kwargs)
+        elif algo=='GSOC':
+            backSub = cv.bgsegm_BackgroundSubtractorGSOC(**kwargs)
+        elif algo=='GMG':
+            backSub = cv.bgsegm_BackgroundSubtractorGMG(**kwargs)
+        elif algo=='CNT':
+            backSub = cv.bgsegm_BackgroundSubtractorCNT(**kwargs)
         else:
-            raise ValueError("pick and algorithm 'MOG2' or 'KNN")
+            raise ValueError("pick and algorithm 'MOG', 'LSBP', 'GSOC', 'GMG', 'CNT', 'MOG2' or 'KNN")
         return backSub
 
     def movement_by_background_removal(self, subtractor, generator, invert_mask=False, **kwargs):
@@ -50,7 +60,10 @@ class Video:
         #skipping the first one because that is a blank mask
         return frames[1:], masks[1:]
 
-    #TODO this seems simple concat frames and masks and write to path
+    def movement_by_optical_flow(self, generator, also, invert_mask=False, **kwargs):
+        pass
+
+
     def write_mp4(self, frames, masks, output, size=(3,3), FPS=10, period=30):
         if len(frames) != len(masks):
             raise ValueError("the number frames do not match number of masks")

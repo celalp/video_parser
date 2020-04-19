@@ -1,6 +1,7 @@
 # there are algorithm and method specific parameters see readme for details
 # method and algorithm are mandatory if others are left blank default values are assumed
 
+method: backgroud_remove
 algorithm: MOG2
 method_parameters:
    detectShadows: false
