@@ -1,37 +1,18 @@
-# Parse gut slice videos
+# Object Detection Branch
 
-This is the mini python package I used to analyse the initial batch of gut slice videos. The whole thing consists of 3 
-python files. `parse_video.py` and `utils.py` are the workhorse files and `analysis.py` is the executable script.
-
-# Installation
-
-This package was written in python 3.7 so that needs to be installed. See [python documentation](https://www.python.org/) 
-for OS specific installation instructions. 
-
-## Dependencies
-
-This package has several dependencies, they are in the `requriements.txt` package. After python installation those can be 
-installed using `pip`. If `pip` is not installed in your system you can use [these instructions](https://pip.pypa.io/en/stable/installing/) 
-to install `pip` and run the command: 
-
-```bash
-pip install -r requriements.txt
-```
-
-Keep in mind that if you have multiple versions of python installed (python2 vs 3 or python 3.5 vs 3.6) you might want to 
-follow [different instructions](https://stackoverflow.com/questions/2812520/dealing-with-multiple-python-versions-and-pip).
+This branch is for detecting individual objects in each frame and calculating different attributes. Because of this it is signficantly slower than movement detection. To overcome this limitaiton for mask generation and attribute calculation you can speficify the number of cores to use. 
 
 # Running
 
-There are 2 mutually exclusive analysis modes. Directory and file. Directory mode takes a directory path and iterates over
-all the files in that specific location that end with .avi. File mode takes a single file. 
+Object detection is done through multi-otsu segmentation followed by watershed algorithm. If you need other methods implemented please create an issue with your specific use case and what algorithms you need. 
+
+Video I/O is handled through [opencv](https://opencv.org/) but most other image manipulation and object detection is done through [scikit-image](https://scikit-image.org/). 
 
 Here are the command line options, you can also view these using 
 
 ```bash
 python analysis.py --help
 ```
-
 
 `-f` or `--filename` : file path for file mode usage  
 `-d` or `--directory` : directory for directory mode usage  
@@ -111,6 +92,8 @@ column that is the sum of all pixels in the mask and label column which can be i
 for multi object tracking in the future.
 
 2. An mp4 video for each feature specified. 
+
+3. the config.yaml file for the run for record keeping. 
 
 You can use the values in the excel file to visualize using your favourite graphing tools. 
 
