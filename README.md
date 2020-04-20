@@ -45,7 +45,7 @@ and follow the instruction on the readme there.
 Similarly, for movement detection use:
 
 ```bash
-git checkout object_detection
+git checkout movement_detection
 ``` 
 
 # Running
@@ -58,7 +58,7 @@ You can see analysis type command option using
 ```bash
 python analysis.py --help
 ```
+The analysis generates a folder specified in with the `-o` flag. This folder contains an excel file that has the resutls (depending on the analysis more speficfied) an mp4 file for visual expection of the analysis and the config.yaml file used for reproducibility. 
 
-This will generate a folder called myoutput. Inside this folder there will be another folder per video. Within these 
-folder there will be multiple files. These are:
+See the other branches for detailed explanantion of the analyses conducted. 
 
