@@ -27,6 +27,7 @@ class Movement:
             raise ValueError("pick an algorithm 'dualtvl1' or 'farnebeck'")
         return denseFlow
 
+    # TODO need to fix the both section and find a way to normalize
     def dense_flow_calculate(self, frame1, frame2, dense_flow, get, **kwargs):
         if frame1.shape != frame2.shape:
             raise ValueError("Your video frames are not the same shape")

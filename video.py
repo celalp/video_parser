@@ -16,7 +16,7 @@ class Video:
             self.file = path
             self.video = cv.VideoCapture(path)
             self.frames = []
-            self.markers=[]
+            self.threshold = None
             self.masks = []
 
     def get_frames(self, invert=False, denoise=False, dsk=None):
@@ -66,7 +66,6 @@ class Video:
         else:
             return adjusted
 
-    # TODO this is not done I need to get the video, overlay and mask in one pic
     def write_mp4(self, output, size=(3, 3), FPS=10, period=30):
         if len(self.frames) != len(self.masks):
             raise ValueError("the number frames do not match number of masks")

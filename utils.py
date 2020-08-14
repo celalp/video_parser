@@ -1,5 +1,8 @@
 import skimage.exposure as exp
 from functools import partial
+from skimage.segmentation import watershed
+import numpy as np
+
 
 def adjust(frame, method, **kwargs):
     if method=="equalize":
@@ -22,9 +25,19 @@ def curry(orig_func, **kwargs):
     newfunc=partial(orig_func, **kwargs)
     return newfunc
 
+def apply_watershed(frame, threshold, **kwargs):
+    markers=np.zeros_like(frame)
+    if type(threshold)==np.ndarray:
+        markers[frame < threshold[0]] = 1
+        markers[frame > threshold[len(threshold) - 2]] = 2
+    else:
+        markers[frame < threshold] = 1
+        markers[frame > threshold] = 2
 
-#TODO bool get largest object in the selection
-def calculate_properties(mask, image, props, to_cache, fill_holes, min_size=20000,
+    mask=watershed(frame, markers, **kwargs)
+    return mask
+
+def calculate_properties(mask, image, props=None, to_cache=True, fill_holes=False, min_size=20000,
                          get_largest=False):
     if fill_holes:
         mask = ndi.binary_fill_holes(mask-1)
@@ -39,11 +52,20 @@ def calculate_properties(mask, image, props, to_cache, fill_holes, min_size=2000
         pix_sum = np.sum(image[labels == lab])
         intensities.append(pix_sum)
 
-    attrs=regionprops_table(label_image=labels, intensity_image=image, properties=props,
-                            cache=to_cache)
-    attrs=pd.DataFrame(attrs)
+    if props is None:
+        props=["label", "area", "bbox_area", "convex_area", "eccentricity", "extent", "local_centroid",
+               "major_axis_length", "minor_axis_length", "perimeter", "solidity",
+               "weigthed_local_centroid", "orientation"]
+    else:
+        props.insert(0, "label")
+
+    attrs = pd.DataFrame(attrs)
     attrs.insert(1, "intensities", intensities)
-    attrs=attrs[attrs["area"] > min_size]
+
+    if not get_largest:
+        attrs=attrs[attrs["area"] > min_size]
+    else:
+        attrs=attrs[attrs["area"]==attrs["area"].max()]
 
     return pd.DataFrame(attrs)
 
