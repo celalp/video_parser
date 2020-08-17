@@ -5,6 +5,9 @@ import video as vid
 import os
 from datetime import datetime
 import shutil
+import object as obj
+import movement as mov
+
 
 if __name__=="__main__":
     parser = arg.ArgumentParser(description='detect objects or movements in a video file')
@@ -44,11 +47,10 @@ if __name__=="__main__":
         myvid.get_frames(invert=params["invert"], denoise=params["denoice"], dsk=params["disk_size"])
 
         if params["method"]=="object_detection":
-            from video_parser import object
 
-        elif params["method"]=="movement_detection"
-            from video_parser import movement
-            pass
+
+        elif params["method"]=="movement_detection":
+
 
 
 

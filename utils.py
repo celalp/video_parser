@@ -4,6 +4,8 @@ from skimage.segmentation import watershed
 import numpy as np
 
 
+
+
 def adjust(frame, method, **kwargs):
     if method=="equalize":
         adjusted=exp.equalize_hist(frame, **kwargs)
@@ -68,4 +70,5 @@ def calculate_properties(mask, image, props=None, to_cache=True, fill_holes=Fals
         attrs=attrs[attrs["area"]==attrs["area"].max()]
 
     return pd.DataFrame(attrs)
+
 

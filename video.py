@@ -1,12 +1,14 @@
 import os
 import cv2 as cv
-import matplotlib.pyplot as plt
 import matplotlib.animation as anim
+import matplotlib.pyplot as plt
+from matplotlib.colors import Normalize
 import numpy as np
 from skimage.filters import rank
 from skimage.morphology import disk
 from skimage.exposure import match_histograms
 import utils
+
 
 class Video:
     def __init__(self, path):
@@ -66,18 +68,38 @@ class Video:
         else:
             return adjusted
 
-    def write_mp4(self, output, size=(3, 3), FPS=10, period=30):
-        if len(self.frames) != len(self.masks):
+    def write_mp4(self, output, frames=None, masks=None, size=(6, 3), FPS=10, period=30, normalize=False):
+        if len(self.frames) == 0 and frames is None:
+            raise ValueError("you did not specify any frames")
+        elif frames is None and len(self.frames) > 0:
+            frames = self.frames
+        elif frames is not None and len(self.frames) > 0:
+            raise ValueError("you specified 2 sets of frames")
+
+        if len(self.masks) == 0 and masks is None:
+            raise ValueError("you did not specify any masks")
+        elif masks is None and len(self.masks) > 0:
+            masks = self.masks
+
+        if len(frames) != len(masks):
             raise ValueError("the number frames do not match number of masks")
         else:
-            fig = plt.figure(figsize=size)
-            ims = []
-            for i in range(len(self.frames)):
+            fig, (ax1, ax2) = plt.subplots(1,2)
+            fig.set_size_inches(size)
+            ims=[]
+            if normalize:
+                stacked = np.stack(masks, axis=2)
+                max_val = stacked.max()
+                min_val = stacked.min()
+            for i in range(len(frames)):
                 if i % period == 0:
-                    combined = cv.hconcat([self.frames[i], self.masks[i]])
-                    ims.append([plt.imshow(combined, animated=True)])
+                    im1 = ax1.imshow(frames[0], animated=True)
+                    if normalize:
+                        im2 = ax2.imshow(masks[i], animated=True, norm=Normalize(min_val, max_val))
+                    else:
+                        im2 = ax2.imshow(masks[i], animated=True)
+                    ims.append([im1, im2])
                 else:
                     continue
-
             ani = anim.ArtistAnimation(fig, ims, interval=int(np.round(1000 / FPS)))
             ani.save(output)
