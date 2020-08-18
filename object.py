@@ -33,7 +33,7 @@ class Watershed:
                 markers = p.map(thresh_func, frames)
 
         if inplace and Video is not None:
-            Video.markers = markers
+            Video.threshold = markers
         elif inplace and Video is None:
             raise ValueError("did not specify a video class")
         else:

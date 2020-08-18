@@ -2,13 +2,13 @@
 # mandatory parameters
 video:
   invert: false
-  denoise: true
-  disk: 2
+  denoise:
+    disk: 2
   adjust:
     method: gamma
     gain: 1 #this is a gamma specific parameter see readme for details
-  normalize: true
-  reference_frame: 0 # if normalize is false this parameter is ignored
+  normalize:
+    reference_frame: 0
 
 # analysis parameters
 method: object_detection
@@ -32,14 +32,12 @@ calculate: # see readme for all available options
   get_largest: true
 
 # video output parameters
-video_output:
-  write: true # if this is false the rest is ignored see readme
-  what:
-    - mask
-    - frame #using pseudo color
-  periodicity: 10 # use every nth frame
-  FPS: 10 #frames per second
-  size:
-    width: 3 #inches
-    height: 3
+output:
+  video:
+      periodicity: 10 # use every nth frame
+      FPS: 10 #frames per second
+      size:
+        width: 6 #inches
+        height: 3
+  raw:
 

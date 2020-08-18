@@ -5,3 +5,4 @@ scikit-image
 scipy
 opencv-python
 matplotlib
+h5py

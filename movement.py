@@ -1,6 +1,8 @@
 import numpy as np
 import cv2 as cv
 from video import Video
+from utils import curry
+from multiprocessing import Pool
 
 class Movement:
     def background_subtractor(self, algo, **kwargs):
@@ -37,12 +39,13 @@ class Movement:
             if what == "magnitude":
                 return mag
             elif what == "angle":
+                ang = ang*180/np.pi/2
                 return ang
             else:
                 raise ValueError("you can get either magnitude or angle")
 
 
-    def movement(self, Video, method, function, get, frames=None, inplace=True, **kwargs):
+    def movement(self, Video, method, function, get, frames=None, inplace=True):
         if len(Video.frames) == 0 and frames is None:
             raise ValueError("you did not specify any frames")
         elif frames is None and len(Video.frames) > 0:
@@ -53,14 +56,15 @@ class Movement:
         masks = []
         if method == "background":
             for frame in frames:
-                mask = function.apply(frame, **kwargs)
+                mask = function.apply(frame)
                 masks.append(mask)
         elif method == "optical":
             masks.append(np.zeros_like(frames[0]))
             for i in range(1, len(frames)):
                 mask = self.dense_flow_calculate(frames[i - 1], frames[i], function,
-                                                 what=get, **kwargs)
+                                                 what=get)
                 masks.append(mask)
+
         else:
             raise ValueError("methods can only be 'background' or 'optical'")
         if inplace:

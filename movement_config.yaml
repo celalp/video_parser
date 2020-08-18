@@ -7,16 +7,17 @@
 # background subtraction
 method: movement_detection # see readme for details and mandatory fields
 type: background_subtraction
-algorithm: MOG2
-algorithm_params:
-  varThreshold: 20 # see readme for method specific parameters
+algorithm:
+  name: MOG2
+  algo_params:
+    varThreshold: 20 # see readme for method specific parameters
 
 # dense optical flow
 method: movement_detection
 type: optical_flow
-algorith:
+algorithm:
   name: farnebeck
-  params:
+  algo_params:
     numLevels: 5 # see readme for a full list
     winSize: 20
   return: magnitude

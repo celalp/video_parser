@@ -8,6 +8,7 @@ from skimage.filters import rank
 from skimage.morphology import disk
 from skimage.exposure import match_histograms
 import utils
+import h5py
 
 
 class Video:
@@ -36,14 +37,14 @@ class Video:
                     if invert:
                         frame = cv.bitwise_not(frame)
                     if denoise:
-                        if disk is None:
+                        if dsk is None:
                             print("Using default disk value 2")
                             dsk = 2
                         frame = rank.median(frame, disk(dsk))
                     self.frames.append(frame)
             print("Done reading frames for " + self.file)
 
-    def normalize_frames(self, inplace=True, reference_frame=0):
+    def normalize_frames(self, inplace=True, reference_frame=None):
         if reference_frame is None:
             print("No reference frame provided using the first frame as reference")
             reference_frame = 0
@@ -103,3 +104,30 @@ class Video:
                     continue
             ani = anim.ArtistAnimation(fig, ims, interval=int(np.round(1000 / FPS)))
             ani.save(output)
+
+    def write_raw(self, output, frames=None, masks=None):
+        if len(self.frames) == 0 and frames is None:
+            raise ValueError("you did not specify any frames")
+        elif frames is None and len(self.frames) > 0:
+            frames = self.frames
+        elif frames is not None and len(self.frames) > 0:
+            raise ValueError("you specified 2 sets of frames")
+
+        if len(self.masks) == 0 and masks is None:
+            raise ValueError("you did not specify any masks")
+        elif masks is None and len(self.masks) > 0:
+            masks = self.masks
+
+        if len(frames) != len(masks):
+            raise ValueError("the number frames do not match number of masks")
+
+        f=h5py.File(output, "w-")
+        fs = f.create_group("frames")
+        ms = f.create_group("masks")
+        fs.create_dataset("frames", data=np.stack(frames, axis=2))
+        ms.create_dataset("masks", data=np.stack(masks, axis=2))
+        f.close()
+
+        print("Done writing raw data")
+        return None
+
