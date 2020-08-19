@@ -66,7 +66,7 @@ if __name__ == "__main__":
             if "method" not in params["video"]["method"]:
                 raise ValueError("You did not specify an adjustment algorithm")
             else:
-                myvid.adjust(params["video"]["adjust"])
+                myvid.adjust(method=params["video"]["adjust"] **params["adjust"]["method_params"])
 
         if "normalize" in params["video"]:
             if "reference_frame" in params["video"]["normalize"]:

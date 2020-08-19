@@ -36,13 +36,15 @@ class Movement:
         else:
             flow = dense_flow.calc(frame1, frame2, flow=None, **kwargs)
             mag, ang = cv.cartToPolar(flow[..., 0], flow[..., 1])
+            ang = ang * 180 / np.pi / 2
             if what == "magnitude":
                 return mag
             elif what == "angle":
-                ang = ang*180/np.pi/2
                 return ang
+            elif what == "both":
+                return np.stack([mag, ang], axis=2)
             else:
-                raise ValueError("you can get either magnitude or angle")
+                raise ValueError("you can get either magnitude, angle or both")
 
 
     def movement(self, Video, method, function, get, frames=None, inplace=True):

@@ -105,7 +105,7 @@ class Video:
             ani = anim.ArtistAnimation(fig, ims, interval=int(np.round(1000 / FPS)))
             ani.save(output)
 
-    def write_raw(self, output, frames=None, masks=None):
+    def write_raw(self, output, frames=None, masks=None, thresholds=None):
         if len(self.frames) == 0 and frames is None:
             raise ValueError("you did not specify any frames")
         elif frames is None and len(self.frames) > 0:
