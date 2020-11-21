@@ -95,7 +95,7 @@ class Video:
                 min_val = stacked.min()
             for i in range(len(frames)):
                 if i % period == 0:
-                    im1 = ax1.imshow(frames[0], animated=True)
+                    im1 = ax1.imshow(frames[i], animated=True)
                     if normalize:
                         im2 = ax2.imshow(masks[i], animated=True, norm=Normalize(min_val, max_val))
                     else:

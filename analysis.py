@@ -7,6 +7,7 @@ from datetime import datetime
 import shutil
 import object as obj
 import movement as mov
+import cv2 as cv
 
 if __name__ == "__main__":
     parser = arg.ArgumentParser(description='detect objects or movements in a video file')
@@ -39,6 +40,13 @@ if __name__ == "__main__":
                 files.append(args.directory + "/" + file)
             else:
                 continue
+                
+    if "cores" in params.keys():
+        cv.setNumThreads(params["cores"])
+    else:
+        print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "No multicore informatoin provided setting cores to 1")
+        cv.setNumThreads(0)
+
 
     parsed_videos = {}
     for file in files:
@@ -77,7 +85,8 @@ if __name__ == "__main__":
         if "cores" in params.keys():
             cores = params["cores"]
         else:
-            cores = 1
+            print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "No multithreading specified setting threads to 1")
+            cores = 0
 
         if params["method"] == "object_detection":
             if "algorithm" not in params["threshold"].keys():
