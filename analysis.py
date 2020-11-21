@@ -132,7 +132,8 @@ if __name__ == "__main__":
         print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Preparing results for " + file)
         filename=file.split("/").pop()
         filename=filename.replace(args.extension, "")
-        print(filename)
+        filename=filename.replace(" ", "")
+
         resultsdir = os.path.abspath(args.output) + "/" + filename
         os.makedirs(resultsdir, exist_ok=True)
         with pd.ExcelWriter(resultsdir + "/results.xlsx") as writer:
