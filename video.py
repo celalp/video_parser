@@ -1,5 +1,6 @@
 import os
 import cv2 as cv
+import matplotlib
 import matplotlib.animation as anim
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
@@ -9,7 +10,7 @@ from skimage.morphology import disk
 from skimage.exposure import match_histograms
 import utils
 import h5py
-
+matplotlib.use("Agg")
 
 class Video:
     def __init__(self, path):

@@ -37,7 +37,6 @@ if __name__ == "__main__":
         for file in os.listdir(args.directory):
             if file.endswith(args.extension):
                 files.append(args.directory + "/" + file)
-                print(files)
             else:
                 continue
 
@@ -131,7 +130,10 @@ if __name__ == "__main__":
                     raise ValueError("type can only be background_subtraction or optical_flow")
 
         print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Preparing results for " + file)
-        resultsdir = args.output + "/" + file
+        filename=file.split("/").pop()
+        filename=filename.replace(args.extension, "")
+        print(filename)
+        resultsdir = os.path.abspath(args.output) + "/" + filename
         os.makedirs(resultsdir, exist_ok=True)
         with pd.ExcelWriter(resultsdir + "/results.xlsx") as writer:
             results.to_excel(writer, sheet_name="properties", index=False)
@@ -140,20 +142,20 @@ if __name__ == "__main__":
             if "video" in params["output"]:
                 vidname = resultsdir + "/results.mp4"
                 print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Generating mp4 for " + file)
-                if "size" not in params["video_output"].keys():
+                if "size" not in params["video"].keys():
                     size = (6, 3)
                 else:  # this will give a key error is the user messes up so I'm going to leave it
-                    size = (params["video_ouptut"]["size"]["width"], params["video_ouptut"]["size"]["height"])
+                    size = (params["video"]["size"]["width"], params["video_ouptut"]["size"]["height"])
 
-                if "FPS" not in params["video_ouptut"].keys():
+                if "FPS" not in params["video"].keys():
                     FPS = 10
                 else:
-                    FPS = params["video_ouptut"]["FPS"]
+                    FPS = params["video"]["FPS"]
 
-                if "periodicity" not in params["video_ouptut"].keys():
+                if "periodicity" not in params["video"].keys():
                     period = 30
                 else:
-                    period = params["video_ouptut"]["periodicity"]
+                    period = params["video"]["periodicity"]
 
                 myvid.write_mp4(output=vidname, size=size, FPS=FPS, period=period)
                 print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Done analyzing " + file)

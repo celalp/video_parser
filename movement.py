@@ -47,7 +47,7 @@ class Movement:
                 raise ValueError("you can get either magnitude, angle or both")
 
 
-    def movement(self, Video, method, function, get, frames=None, inplace=True):
+    def movement(self, Video, method, function, get=None, frames=None, inplace=True):
         if len(Video.frames) == 0 and frames is None:
             raise ValueError("you did not specify any frames")
         elif frames is None and len(Video.frames) > 0:
