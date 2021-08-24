@@ -63,7 +63,7 @@ class Watershed:
                 masks.append(mask)
         else:
             with Pool(cores) as p:
-                watershed_func = curry(watershed, **kwargs)
+                watershed_func = curry(apply_watershed, **kwargs)
                 inputs = zip(frames, threshold)
                 masks = p.starmap(watershed_func, inputs)
 
@@ -79,6 +79,8 @@ class Watershed:
             raise ValueError("Provided 2 sets of frames")
         elif Video is not None and frames is None:
             frames = Video.frames
+        elif Video is None and frames is not None:
+            frames=frames
         elif Video is None and frames is None:
             raise ValueError("Did not provide any frames")
 
@@ -86,6 +88,8 @@ class Watershed:
             raise ValueError("Provided 2 sets of masks")
         elif Video is not None and masks is None:
             masks = Video.masks
+        elif Video is not None and masks is not None:
+            masks=masks
         elif Video is None and masks is None:
             raise ValueError("did not provide any masks")
 
@@ -94,9 +98,9 @@ class Watershed:
 
         if cores > 1:
             with Pool(cores) as p:
-                properties = curry(calculate_properties(**kwargs))
+                calc_props = curry(calculate_properties, **kwargs)
                 inputs = zip(masks, frames)
-                measures = p.starmap(properties, inputs)
+                measures = p.starmap(calc_props, inputs)
         else:
             measures = []
             for i in range(len(masks)):

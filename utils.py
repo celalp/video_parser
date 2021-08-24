@@ -11,7 +11,7 @@ def adjust(frame, method, **kwargs):
     if method=="equalize":
         adjusted=exp.equalize_hist(frame, **kwargs)
     elif method=="gamma":
-        adjusted=exp.adjust_gamma(frame **kwargs)
+        adjusted=exp.adjust_gamma(frame, **kwargs)
     elif method=="log":
         adjusted=exp.adjust_log(frame, **kwargs)
     elif method=="sigmoid":
@@ -21,8 +21,6 @@ def adjust(frame, method, **kwargs):
     else:
         raise ValueError("method can be equalize, gamma, log, sigmoid or adaptive")
     return adjusted
-
-
 
 def curry(orig_func, **kwargs):
     newfunc=partial(orig_func, **kwargs)

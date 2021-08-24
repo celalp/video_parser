@@ -23,10 +23,11 @@ class Video:
             self.threshold = None
             self.masks = []
 
-    def get_frames(self, invert=False, denoise=False, dsk=None):
+    def get_frames(self, invert=False, denoise=False, dsk=None, inplace=True):
         if not self.video.isOpened():
             raise IOError("Error opening the video file")
         else:
+            frames=[]
             while self.video.isOpened():
                 ret, frame = self.video.read()
                 if frame is None:
@@ -42,28 +43,52 @@ class Video:
                             print("Using default disk value 2")
                             dsk = 2
                         frame = rank.median(frame, disk(dsk))
-                    self.frames.append(frame)
+                frames.append(frame)
+                                
             print("Done reading frames for " + self.file)
+            if inplace:
+                self.frames=frames
+            else:
+                return frames
 
-    def normalize_frames(self, inplace=True, reference_frame=None):
+    def normalize_frames(self, frames=None, inplace=True, reference_frame=None):
+        if frames is None and len(self.frames)==0:
+            raise ValueError("You did not specify any frames")
+                
+        if frames is not None:
+            frames=frames
+        else:
+            frames=self.frames
+                
         if reference_frame is None:
             print("No reference frame provided using the first frame as reference")
             reference_frame = 0
+            
         adjusted_frames = []
-        for i in range(len(self.frames)):
+        for i in range(len(frames)):
             if i == reference_frame:
                 continue
             else:
-                matched = match_histograms(self.frames[i], self.frames[reference_frame], multichannel=False)
+                matched = match_histograms(frames[i], frames[reference_frame], multichannel=False)
                 adjusted_frames.append(matched)
         if inplace:
             self.frames = adjusted_frames
         else:
             return adjusted_frames
 
-    def adjust(self, inplace=True, **kwargs):
-        adjusted = []
-        for frame in self.frames:
+    def adjust(self, frames=None, inplace=True, **kwargs):
+        
+        if frames is None and len(self.frames)==0:
+            raise ValueError("You did not specify any frames")
+                
+        if frames is not None:
+            frames=frames
+        else:
+            frames=self.frames
+            
+        adjusted = []               
+
+        for frame in frames:
             adjusted.append(utils.adjust(frame, **kwargs))
         if inplace:
             self.frames = adjusted
@@ -75,7 +100,9 @@ class Video:
             raise ValueError("you did not specify any frames")
         elif frames is None and len(self.frames) > 0:
             frames = self.frames
-        elif frames is not None and len(self.frames) > 0:
+        elif frames is not None and len(self.frames)==0:
+            frames=frames
+        elif frames is not None and len(self.frames)==0:
             raise ValueError("you specified 2 sets of frames")
 
         if len(self.masks) == 0 and masks is None:
