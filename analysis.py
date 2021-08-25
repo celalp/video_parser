@@ -11,12 +11,12 @@ import cv2 as cv
 
 if __name__ == "__main__":
     parser = arg.ArgumentParser(description='detect objects or movements in a video file')
-    parser.add_argument('-f', '--filename', type=str, help='avi file', action="store", default=None)
-    parser.add_argument('-d', '--directory', type=str, help="directory of avi files and nothing else", default=None)
+    parser.add_argument('-f', '--filename', type=str, help='video file', action="store", default=None)
+    parser.add_argument('-d', '--directory', type=str, help="directory of video files and nothing else", default=None)
     parser.add_argument('-y', '--config_yaml', type=str, help='path of the config.yaml file', action="store")
     parser.add_argument('-e', '--extension', type=str, help='file extension default .avi', action="store",
                         default=".avi")
-    parser.add_argument('-o', '--output', type=str, help='name of the output directory, this will have subdirectories',
+    parser.add_argument('-o', '--output', type=str, help='name of the output directory, this will have subdirectories if                         -d option is used',
                         action="store")
     args = parser.parse_args()
 
@@ -43,9 +43,11 @@ if __name__ == "__main__":
                 
     if "cores" in params.keys():
         cv.setNumThreads(params["cores"])
+        cores=params["cores"]
     else:
         print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "No multicore informatoin provided setting cores to 1")
         cv.setNumThreads(0)
+        cores=1
 
 
     parsed_videos = {}
@@ -82,12 +84,7 @@ if __name__ == "__main__":
                 reference_frame = None
             myvid.normalize_frames(reference_frame=reference_frame)
 
-        if "cores" in params.keys():
-            cores = params["cores"]
-        else:
-            print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "No multithreading specified setting threads to 1")
-            cores = 0
-
+        
         if params["method"] == "object_detection":
             if "algorithm" not in params["threshold"].keys():
                 raise ValueError("You did not specify a tresholding algorithm")
@@ -96,7 +93,7 @@ if __name__ == "__main__":
                 print("[" + datetime.now().strftime(
                     "%Y/%m/%d %H:%M:%S") + "] " + "Calculating thresholding valules " + file)
                 seg.threshold(Video=myvid, method=params["threshold"]["algorithm"], cores=cores,
-                              **params["threshold"]["algorithm"]["algorithm_params"])
+                              **params["threshold"]["algorithm_params"])
                 print("[" + datetime.now().strftime(
                     "%Y/%m/%d %H:%M:%S") + "] " + "Performing watershed segmentation " + file)
                 seg.segmentation(Video=myvid, cores=cores, **params["segmentation_params"])
@@ -152,23 +149,25 @@ if __name__ == "__main__":
             if "video" in params["output"]:
                 vidname = resultsdir + "/results.mp4"
                 print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Generating mp4 for " + file)
-                if "size" not in params["video"].keys():
+                if "size" not in params["output"]["video"].keys():
                     size = (6, 3)
                 else:  # this will give a key error is the user messes up so I'm going to leave it
-                    size = (params["video"]["size"]["width"], params["video_ouptut"]["size"]["height"])
+                    size = (params["output"]["video"]["size"]["width"], 
+                                   params["output"]["video"]["size"]["height"])
 
-                if "FPS" not in params["video"].keys():
+                if "FPS" not in params["output"]["video"].keys():
                     FPS = 10
                 else:
-                    FPS = params["video"]["FPS"]
+                    FPS = params["output"]["video"]["FPS"]
 
-                if "periodicity" not in params["video"].keys():
+                if "periodicity" not in params['output']["video"].keys():
                     period = 30
                 else:
-                    period = params["video"]["periodicity"]
+                    period = params["output"]["video"]["periodicity"]
 
                 myvid.write_mp4(output=vidname, size=size, FPS=FPS, period=period)
                 print("[" + datetime.now().strftime("%Y/%m/%d %H:%M:%S") + "] " + "Done analyzing " + file)
+            
             if "raw" in params["output"]:
                 rawname=resultsdir+"/raw_data.hdf5"
                 myvid.write_raw(rawname)
