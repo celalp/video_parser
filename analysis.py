@@ -79,7 +79,7 @@ if __name__ == "__main__":
 
         if "normalize" in params["video"]:
             if "reference_frame" in params["video"]["normalize"]:
-                reference_frame = params["video"]["normalize"]
+                reference_frame = params["video"]["normalize"]["reference_frame"]
             else:
                 reference_frame = None
             myvid.normalize_frames(reference_frame=reference_frame)
