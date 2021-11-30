@@ -72,10 +72,10 @@ if __name__ == "__main__":
         myvid.get_frames(invert=invert, denoise=denoise, dsk=disk)
 
         if "adjust" in params["video"].keys():
-            if "method" not in params["video"]["method"]:
+            if "method" not in params["video"]["adjust"]:
                 raise ValueError("You did not specify an adjustment algorithm")
             else:
-                myvid.adjust(method=params["video"]["adjust"] **params["adjust"]["method_params"])
+                myvid.adjust(method=params["video"]["adjust"]["method"], **params["video"]["adjust"]["method_params"])
 
         if "normalize" in params["video"]:
             if "reference_frame" in params["video"]["normalize"]:

@@ -76,7 +76,7 @@ class Video:
         else:
             return adjusted_frames
 
-    def adjust(self, frames=None, inplace=True, **kwargs):
+    def adjust(self, method, frames=None, inplace=True, **kwargs):
         
         if frames is None and len(self.frames)==0:
             raise ValueError("You did not specify any frames")
@@ -89,7 +89,7 @@ class Video:
         adjusted = []               
 
         for frame in frames:
-            adjusted.append(utils.adjust(frame, **kwargs))
+            adjusted.append(utils.adjust(frame, method, **kwargs))
         if inplace:
             self.frames = adjusted
         else:
